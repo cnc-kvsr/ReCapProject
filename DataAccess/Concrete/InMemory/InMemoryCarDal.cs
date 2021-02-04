@@ -3,6 +3,7 @@ using Entities.Concrete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace DataAccess.Concrete
@@ -48,15 +49,27 @@ namespace DataAccess.Concrete
         {
             return _cars;
         }
-    /// <summary>
-    /// Sisteme kayıtlı olan arabaları Id numarasına göre listeler.
-    /// </summary>
-    /// <param name="id">Araba Id'si</param>
-    /// <returns></returns>
-    public List<Car> GetById(int id)
+
+        public List<Car> GetAll(Expression<Func<Car, bool>> filter = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sisteme kayıtlı olan arabaları Id numarasına göre listeler.
+        /// </summary>
+        /// <param name="id">Araba Id'si</param>
+        /// <returns></returns>
+        public List<Car> GetById(int id)
         {
             return _cars.Where(c => c.Id == id).ToList();
         }
+
+        public List<Car> GetById(Expression<Func<Car, bool>> filter)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Sisteme kayıtlı olan araba bilgilerini günceller.
         /// </summary>
@@ -69,6 +82,11 @@ namespace DataAccess.Concrete
             carToUpdate.ModelYear = car.ModelYear;
             carToUpdate.DailyPrice = car.DailyPrice;
             carToUpdate.Description = car.Description;
+        }
+
+        Car IEntityRepository<Car>.GetById(Expression<Func<Car, bool>> filter)
+        {
+            throw new NotImplementedException();
         }
     }
 }
