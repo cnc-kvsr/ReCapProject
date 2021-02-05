@@ -44,7 +44,6 @@ namespace ConsoleUI
             Console.WriteLine("------Araç Ekleme------");
             carManager.Add(new Car
             {
-                Id=6,
                 CarName="Ab",
                 BrandId=2,
                 ColorId=1,
