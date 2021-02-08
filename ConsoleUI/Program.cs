@@ -18,14 +18,14 @@ namespace ConsoleUI
             BringTheColorList();
 
             CarDetails();
-            Console.WriteLine();
-            Console.WriteLine("-----BrandId'ye göre-----");
+            
+            Console.WriteLine("\n-----BrandId'ye göre-----");
             foreach (var car in carManager.GetCarsByBrandId(1))
             {
                 Console.WriteLine(car.CarName);
             }
-            Console.WriteLine();
-            Console.WriteLine("------ColorId'ye göre------ ");
+           
+            Console.WriteLine("\n------ColorId'ye göre------ ");
             foreach (var car in carManager.GetCarsByColorId(2))
             {
                 Console.WriteLine(car.CarName);
