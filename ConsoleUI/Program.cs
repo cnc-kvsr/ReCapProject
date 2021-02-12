@@ -20,37 +20,37 @@ namespace ConsoleUI
             CarDetails();
             
             Console.WriteLine("\n-----BrandId'ye göre-----");
-            foreach (var car in carManager.GetCarsByBrandId(1))
+            foreach (var car in carManager.GetCarsByBrandId(1).Data)
             {
                 Console.WriteLine(car.CarName);
             }
            
             Console.WriteLine("\n------ColorId'ye göre------ ");
-            foreach (var car in carManager.GetCarsByColorId(2))
+            foreach (var car in carManager.GetCarsByColorId(2).Data)
             {
                 Console.WriteLine(car.CarName);
             }
             Console.WriteLine();
-            carManager.Add(new Car
-            {
-                BrandId = 2,
-                CarName = "Peugeot",
-                ColorId = 5,
-                ModelYear = 2020,
-                DailyPrice = 200,
-                Description = " "
-            });
-            CarDetails();
-            Console.WriteLine();
-            carManager.Update(new Car
-            {
-                Id = 10,
-                ColorId = 5
-            });
-            CarDetails();
-            Console.WriteLine();
-            carManager.Delete(new Car { Id = 10 });
-            CarDetails();
+            //carManager.Add(new Car
+            //{
+            //    BrandId = 2,
+            //    CarName = "Peugeot",
+            //    ColorId = 5,
+            //    ModelYear = 2020,
+            //    DailyPrice = 200,
+            //    Description = " "
+            //});
+            //CarDetails();
+            //Console.WriteLine();
+            //carManager.Update(new Car
+            //{
+            //    Id = 10,
+            //    ColorId = 5
+            //});
+            //CarDetails();
+            //Console.WriteLine();
+            //carManager.Delete(new Car { Id = 10 });
+            //CarDetails();
 
             //Console.WriteLine("------Araç Ekleme------");
             //carManager.Add(new Car
@@ -70,10 +70,19 @@ namespace ConsoleUI
         {
             Console.WriteLine("Car Details: ");
             CarManager carManager = new CarManager(new EfCarDal());
-            foreach (var car in carManager.GetCarDetails())
+            var result = carManager.GetCarDetails();
+            if (result.Success==true)
             {
-                Console.WriteLine($"{car.CarId}.Araba : {car.CarName} / {car.BrandName} / {car.ColorName} / {car.DailyPrice}TL");
+                foreach (var car in result.Data)
+                {
+                    Console.WriteLine($"{car.CarId}.Araba : {car.CarName} / {car.BrandName} / {car.ColorName} / {car.DailyPrice}TL");
+                }
             }
+            else
+            {
+                Console.WriteLine(result.Message);
+            }
+            
         }
 
         /// <summary>
@@ -85,7 +94,7 @@ namespace ConsoleUI
             Console.WriteLine("----------------------------");
 
             CarManager carManager = new CarManager(new EfCarDal());
-            foreach (var car in carManager.GetAll())
+            foreach (var car in carManager.GetAll().Data)
             {
                 Console.WriteLine($"Araç Bilgisi : {car.CarName} \n Id : {car.Id} \n Marka : {car.BrandId} \n Renk : {car.ColorId}" +
                     $" \n ModelYılı : {car.ModelYear} \n GünlükFiyat : {car.DailyPrice}TL \n Açıklama : {car.Description}");
