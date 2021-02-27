@@ -9,5 +9,6 @@ namespace WebAPI.Images
     public class ImageUpload
     {
         public IFormFile images { get; set; }
+        public IFormFile carId { get; set; }
     }
 }

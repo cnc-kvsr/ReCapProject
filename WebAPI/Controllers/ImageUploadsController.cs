@@ -1,4 +1,6 @@
-﻿using Business.Constants;
+﻿using Business.Abstract;
+using Business.Constants;
+using Entities.Concrete;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +23,8 @@ namespace WebAPI.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+       
+
         [HttpPost]
         public string Post([FromForm]ImageUpload objectFile)
         {
@@ -40,6 +44,7 @@ namespace WebAPI.Controllers
                         fileStream.Flush();
                         return "Uploaded.";
                     }
+                    
                 }
                 else
                 {
