@@ -43,6 +43,12 @@ namespace DataAccess.Concrete
 
             _cars.Remove(carToDelete);
         }
+
+        public Car Get(Expression<Func<Car, bool>> filter)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Sistemdeki arabaların hepsini listeler.
         /// </summary>

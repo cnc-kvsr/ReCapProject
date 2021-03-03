@@ -24,7 +24,7 @@ namespace Business.Concrete
         [ValidationAspect(typeof(CarImageValidator))]
         public IResult Add(CarImage carImage)
         {
-            IResult result = BusinessRules.Run(CheckIfCountOfCarImageCorrect(carImage.ImageId));
+            IResult result = BusinessRules.Run(CheckIfCountOfCarImageCorrect(carImage.CarImageId));
             if (result!=null)
             {
                 return result;
@@ -53,7 +53,7 @@ namespace Business.Concrete
 
         private IResult CheckIfCountOfCarImageCorrect(int imageId)
         {
-            var result = _carImageDal.GetAll(c => c.ImageId == imageId).Count;
+            var result = _carImageDal.GetAll(c => c.CarImageId == imageId).Count;
             if (result > 5)
             {
                 return new ErrorResult(Messages.CountOfCarImageError);
