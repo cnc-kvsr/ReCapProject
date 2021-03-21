@@ -1,25 +1,54 @@
 ﻿using Business.Abstract;
-using Business.Constants;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
+using Entities.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Business.ValidationRules.FluentValidation;
+using Core.Aspects.Autofac.Validation;
+using Business.BusinessAspects.Autofac;
+using Core.Aspects.Autofac.Caching;
+using System.Linq;
+using Business.Constants;
 
 namespace Business.Concrete
 {
     public class BrandManager : IBrandService
     {
-        private IBrandDal _brandDal;
+        IBrandDal _brandDal;
+
         public BrandManager(IBrandDal brandDal)
         {
             _brandDal = brandDal;
         }
+
+        //[CacheAspect]
         public IDataResult<List<Brand>> GetAll()
         {
-            _brandDal.GetAll();
-            return new SuccessDataResult<List<Brand>>();
+            return new SuccessDataResult<List<Brand>>(_brandDal.GetAll());
+
         }
+        
+        [SecuredOperation("admin, product.add")]
+        [CacheRemoveAspect("IBrandService.Get")]
+        public IResult Add(Brand brand)
+        {
+            _brandDal.Add(brand);
+            return new SuccessResult();
+
+        }
+
+
+
+        
+        [CacheRemoveAspect("IBrandService.Get")]
+        public IResult Update(Brand brand)
+        {
+            _brandDal.Update(brand);
+            return new SuccessResult();
+        }
+
     }
 }
