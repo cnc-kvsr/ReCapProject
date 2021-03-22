@@ -1,64 +1,154 @@
-﻿using Business.Abstract;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Mime;
+using System.Text;
+using Business.Abstract;
 using Business.Constants;
-using Business.ValidationRules.FluentValidation;
-using Core.Aspects.Autofac.Validation;
+using Core.Aspects.Autofac.Caching;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
+using Core.Utilities.Uploads.ImageUploads;
 using DataAccess.Abstract;
 using Entities.Concrete;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace Business.Concrete
 {
     public class CarImageManager : ICarImageService
     {
-        ICarImageDal _carImageDal;
+        private ICarImageDal _imageDal;
 
-        public CarImageManager(ICarImageDal carImageDal)
+        public CarImageManager(ICarImageDal imageDal)
         {
-            _carImageDal = carImageDal;
+            _imageDal = imageDal;
         }
 
-        [ValidationAspect(typeof(CarImageValidator))]
-        public IResult Add(CarImage carImage)
+
+
+        [CacheAspect]
+        public IDataResult<List<CarImage>> GetAll()
         {
-            IResult result = BusinessRules.Run(CheckIfCountOfCarImageCorrect(carImage.CarImageId));
-            if (result!=null)
+            return new SuccessDataResult<List<CarImage>>(_imageDal.GetAll(), Messages.Listed);
+        }
+
+
+
+        [CacheAspect]
+        public IDataResult<List<CarImage>> GetImagesByCarId(int carId)
+        {
+            //return new SuccessDataResult<List<CarImage>>(_imageDal.GetAll(i => i.CarID == carId), Messages.Listed);
+
+            var result = _imageDal.GetAll(i => i.CarId == carId);
+
+            if (result.Count > 0)
+            {
+                return new SuccessDataResult<List<CarImage>>(result);
+            }
+
+            List<CarImage> images = new List<CarImage>();
+            images.Add(new CarImage() { CarId = 0, CarImageId = 0, Date = DateTime.Now, ImagePath = "/images/car-rent.png" });
+
+            return new SuccessDataResult<List<CarImage>>(images);
+        }
+
+
+
+        [CacheAspect]
+        public IDataResult<CarImage> GetById(int imageId)
+        {
+            return new SuccessDataResult<CarImage>(_imageDal.Get(i => i.CarImageId == imageId));
+
+        }
+
+
+
+        //[CacheRemoveAspect("ICarImageService.Get")]
+        public IResult Add(IFormFile file, CarImage carImage)
+        {
+            var result = BusinessRules.Run(
+                CheckIfImageCount(carImage),
+                CheckIfImageExtensionValid(file));
+
+            if (result != null)
             {
                 return result;
             }
-            _carImageDal.Add(carImage);
-            return new SuccessResult(Messages.ImageAdded);
-        }
 
-        public IResult Delete(CarImage carImage)
-        {
-            _carImageDal.Delete(carImage);
-            return new SuccessResult(Messages.ImageDeleted);
+
+            carImage.ImagePath = FileHelper.Add(file);
+            carImage.Date = DateTime.Now;
+            _imageDal.Add(carImage);
+            return new SuccessResult("Car image added");
 
         }
 
-        public IDataResult<List<CarImage>> GetAll()
+        public IResult AddCollective(IFormFile[] files, CarImage carImage)
         {
-            return new SuccessDataResult<List<CarImage>>(_carImageDal.GetAll());
-        }
-       
-        public IResult Update(CarImage carImage)
-        {
-            _carImageDal.Update(carImage);
-            return new SuccessResult();
-        }
-
-        private IResult CheckIfCountOfCarImageCorrect(int imageId)
-        {
-            var result = _carImageDal.GetAll(c => c.CarImageId == imageId).Count;
-            if (result > 5)
+            foreach (var file in files)
             {
-                return new ErrorResult(Messages.CountOfCarImageError);
+                carImage = new CarImage { CarId = carImage.CarId };
+                Add(file, carImage);
             }
             return new SuccessResult();
         }
+
+
+
+        [CacheRemoveAspect("ICarImageService.Get")]
+        public IResult Update(IFormFile file, CarImage carImage)
+        {
+            var result = BusinessRules.Run(
+               CheckIfImageExtensionValid(file));
+
+            if (result != null)
+            {
+                return result;
+            }
+
+            CarImage oldCarImage = GetById(carImage.CarImageId).Data;
+            carImage.ImagePath = FileHelper.Update(file, oldCarImage.ImagePath);
+            carImage.Date = DateTime.Now;
+            carImage.CarId = oldCarImage.CarId;
+            _imageDal.Update(carImage);
+            return new SuccessResult("Car image updated");
+        }
+
+
+
+        [CacheRemoveAspect("ICarImageService.Get")]
+        public IResult Delete(CarImage carImage)
+        {
+
+            string oldPath = GetById(carImage.CarImageId).Data.ImagePath;
+            FileHelper.Delete(oldPath);
+            _imageDal.Delete(carImage);
+            return new SuccessResult(Messages.Deleted);
+        }
+
+        private IResult CheckIfImageCount(CarImage carImage)
+        {
+            List<CarImage> gelAll = _imageDal.GetAll(i => i.CarId == carImage.CarId);
+            var result = (gelAll.Count() >= 15);
+            if (result)
+            {
+                return new ErrorResult("Bir aracın en fazla 5 resmi olabilir.");
+            }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfImageExtensionValid(IFormFile file)
+        {
+            string[] validImageFileTypes = { ".JPG", ".JPEG", ".PNG", ".TIF", ".TIFF", ".GIF", ".BMP", ".ICO", ".WEBP" };
+            var result = validImageFileTypes.Any(t => t == Path.GetExtension(file.FileName).ToUpper());
+            if (!result)
+            {
+                return new ErrorResult("Geçersiz uzantı");
+            }
+            return new SuccessResult();
+        }
+
+
     }
 }

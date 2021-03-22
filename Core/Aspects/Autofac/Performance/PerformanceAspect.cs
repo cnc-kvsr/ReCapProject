@@ -1,25 +1,24 @@
-﻿using Castle.DynamicProxy;
-using Core.Utilities.Interceptors;
-using Core.Utilities.IoC;
+﻿using Core.Utilities.IoC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
+using Castle.DynamicProxy;
+using Core.Utilities.Interceptors;
 
-namespace Core.Aspects.Autofac.Performance
+namespace Core.Aspects.Autofact.Performance
 {
     public class PerformanceAspect : MethodInterception
     {
-        private int _interval;
-        private Stopwatch _stopwatch;
+        int _interval;
+        Stopwatch _stopwatch;
 
         public PerformanceAspect(int interval)
         {
             _interval = interval;
             _stopwatch = ServiceTool.ServiceProvider.GetService<Stopwatch>();
         }
-
 
         protected override void OnBefore(IInvocation invocation)
         {
@@ -30,7 +29,7 @@ namespace Core.Aspects.Autofac.Performance
         {
             if (_stopwatch.Elapsed.TotalSeconds > _interval)
             {
-                Debug.WriteLine($"Performance : {invocation.Method.DeclaringType.FullName}.{invocation.Method.Name}-->{_stopwatch.Elapsed.TotalSeconds}");
+                Debug.WriteLine($"Performance: {invocation.Method.DeclaringType.FullName}.{invocation.Method.Name}-->{_stopwatch.Elapsed.TotalSeconds}");
             }
             _stopwatch.Reset();
         }
