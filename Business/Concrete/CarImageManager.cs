@@ -6,7 +6,9 @@ using System.Net.Mime;
 using System.Text;
 using Business.Abstract;
 using Business.Constants;
+using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Caching;
+using Core.Aspects.Autofac.Validation;
 using Core.Utilities.Business;
 using Core.Utilities.Results;
 using Core.Utilities.Uploads.ImageUploads;
@@ -35,23 +37,22 @@ namespace Business.Concrete
 
 
 
-        [CacheAspect]
-        public IDataResult<List<CarImage>> GetImagesByCarId(int carId)
-        {
-            //return new SuccessDataResult<List<CarImage>>(_imageDal.GetAll(i => i.CarID == carId), Messages.Listed);
+        //[CacheAspect]
+        //public IDataResult<List<CarImage>> GetImagesByCarId(int carId)
+        //{
+        //    var result = _imageDal.GetAll(i => i.CarId == carId);
 
-            var result = _imageDal.GetAll(i => i.CarId == carId);
+        //    if (result.Count > 0)
+        //    {
+        //        return new SuccessDataResult<List<CarImage>>(result);
+        //    }
 
-            if (result.Count > 0)
-            {
-                return new SuccessDataResult<List<CarImage>>(result);
-            }
+        //    List<CarImage> images = new List<CarImage>();
+        //    //images.Add(new CarImage() { CarId = 0, CarImageId = 0, Date = DateTime.Now, ImagePath = "/Images/f4074e7e478e48f2b8d8585fd255f045.jpg" });
 
-            List<CarImage> images = new List<CarImage>();
-            images.Add(new CarImage() { CarId = 0, CarImageId = 0, Date = DateTime.Now, ImagePath = "/images/car-rent.png" });
-
-            return new SuccessDataResult<List<CarImage>>(images);
-        }
+        //    return new SuccessDataResult<List<CarImage>>(images);
+        //}
+        
 
 
 
@@ -149,6 +150,24 @@ namespace Business.Concrete
             return new SuccessResult();
         }
 
+        [ValidationAspect(typeof(CarImageValidator))]
+        [CacheAspect]
+        public IDataResult<List<CarImage>> GetImagesByCarId(int carId)
+        {
+            return new SuccessDataResult<List<CarImage>>(CheckIfCarImageNull(carId), Messages.CarImagesListed);
+        }
 
+        private List<CarImage> CheckIfCarImageNull(int carId)
+        {
+            string path = @"\Images\f4074e7e478e48f2b8d8585fd255f045.jpg";
+            var result = _imageDal.GetAll(c => c.CarId == carId).Any();
+            if (!result)
+            {
+                return new List<CarImage> { new CarImage { CarId = carId, ImagePath = path, Date = DateTime.Now } };
+            }
+            return _imageDal.GetAll(p => p.CarId == carId);
+        }
     }
+
+
 }

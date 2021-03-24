@@ -35,5 +35,6 @@ namespace Business.Constants
         public static string Listed = "Listelendi";
 
         public static string Deleted = "Silindi";
+        public static string CarImagesListed="Resimler listelendi";
     }
 }

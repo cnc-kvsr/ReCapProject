@@ -9,7 +9,7 @@ namespace Core.Utilities.Uploads.ImageUploads
     public class FileHelper
     {
         static string directory = Directory.GetCurrentDirectory() + @"\wwwroot\";
-        static string path = @"Images\";
+        static string path = @"\Images\";
 
         public static string Add(IFormFile file)
         {
