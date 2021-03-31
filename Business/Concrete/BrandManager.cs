@@ -39,10 +39,6 @@ namespace Business.Concrete
             return new SuccessResult();
 
         }
-
-
-
-        
         [CacheRemoveAspect("IBrandService.Get")]
         public IResult Update(Brand brand)
         {
@@ -50,5 +46,9 @@ namespace Business.Concrete
             return new SuccessResult();
         }
 
+        public IDataResult<Brand> GetByBrandId(int brandId)
+        {
+            return new SuccessDataResult<Brand>(_brandDal.Get(b => b.BrandId == brandId));
+        }
     }
 }
